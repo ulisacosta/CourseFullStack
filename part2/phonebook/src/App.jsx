@@ -6,31 +6,44 @@ function App() {
   const [persons, setPersons] = useState([{ id: 1, name: "Arto Hellas" }]);
 
   const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
+  const [filter, setFilter] = useState("");
+
 
 
   const handleNewName = (event) => {
-    console.log(event.target.value)
+   /*  console.log(event.target.value) */
     setNewName(event.target.value)
   }
 
-  const auth = () =>{
+  const handleNewNumber = (e) =>{
+setNewNumber(e.target.value)
+  }
+
+  const handleFilter = (e) =>{
+    setFilter(e.target.value)
 
   }
+  
+  const filteredPersons = persons.filter(person =>
+    person.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
   const addNewName = (e) => {
     e.preventDefault()
-    
-
+   
     const newPerson = {
       id:persons.length + 1,
-      name:newName
+      name:newName,
+      number:newNumber,
+
     }
 
-    setPersons(persons.concat(newPerson))
-    setNewName('')
+    const auth = persons.filter((person) => person.name == newName);
+    const auth2 = auth.length > 0 ? alert(`${auth.map(auths => (auths.name))} is already added to phonebook`) : setPersons(persons.concat(newPerson))
     
-    const auth = persons.filter(person => person.name === newName) ? alert('a') : alert('b')
-    
+    setNewName('')  
+    setNewNumber('')  
 
   }
   
@@ -38,9 +51,24 @@ function App() {
     <>
       <div>
         <h2>Phonebook</h2>
+
+        
+        <div> filter shown with <input value={filter} onChange={handleFilter}/> </div>
+        <div>
+
+       
+      
+     
+        </div>
+
+       
+      
         <form onSubmit={addNewName}>
           <div>
             name: <input value={newName} onChange={handleNewName} />
+          </div>
+          <div>
+            number: <input value={newNumber} onChange={handleNewNumber} />
           </div>
           <div>
          
@@ -48,9 +76,10 @@ function App() {
           </div>
         </form>
         <h2>Numbers</h2>
-      {persons.map((person)=>(
-        <li key={person.id}>{person.name}</li>
-      ))}
+        
+        {filteredPersons.map(person => (
+          <li key={person.id}>{person.name} {person.number}</li>
+        ))}
 
       </div>
     </>
