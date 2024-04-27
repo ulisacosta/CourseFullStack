@@ -6,7 +6,7 @@ export default function Persons(props) {
     <>
 
     {props.filteredPersons.map(person => (
-      <li key={person.id}>{person.name} {person.number}</li>
+      <li key={person.id} >{person.name} {person.number}</li>
     ))}
     </>
   )

@@ -4,20 +4,10 @@ import "./App.css";
 import Filter from "./components/filter/Filter";
 import Form from "./components/form/Form";
 import Persons from "./components/persons/Persons";
+import personsService from "./services/req"
 
 function App() {
-  useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        console.log('promise fulfilled')
-        setPersons(response.data)
-      })
-  }, [])
-
   const [persons, setPersons] = useState([]);
-
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
@@ -35,31 +25,57 @@ function App() {
     setFilter(e.target.value);
   };
 
+  /* Generamos lista de contactos */
+  useEffect(() => {
+    personsService.getAll()
+    .then(initialPersons => {
+      setPersons(initialPersons)
+    })
+  }, [])
+
+  /* Cuando hace click en boton para añadir */
+  const addNewName = (e) => {
+    e.preventDefault();
+    
+    /* Busca si el contacto ya existe */
+      if (persons.some(person => person.name === newName)) {
+        alert(`${newName} is already added to phonebook`);
+        return;
+      }
+
+      /* Datos nuevo contacto */
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+      
+    };
+
+    /* POST para crear contacto */
+    personsService.create(newPerson)
+    .then(returnedPerson => {
+      setPersons(persons.concat(returnedPerson))
+      setNewName("");
+      setNewNumber("");
+    })
+
+/*     axios
+    .post('http://localhost:3001/persons', newPerson)
+    .then(response => {
+      console.log(response)
+      setPersons(persons.concat(response.data))
+    
+    }) */
+
+
+   
+  };
+
   const filteredPersons = persons.filter((person) =>
     person.name.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const addNewName = (e) => {
-    e.preventDefault();
-
-    const newPerson = {
-      name: newName,
-      number: newNumber,
-      id: persons.length + 1,
-    };
-
-    const auth = persons.filter((person) => person.name == newName);
-    const auth2 =
-      auth.length > 0
-        ? alert(
-            `${auth.map((auths) => auths.name)} is already added to phonebook`
-          )
-        : setPersons(persons.concat(newPerson));
-
-    setNewName("");
-    setNewNumber("");
-  };
-
+    
+  
 
   return (
     <>
