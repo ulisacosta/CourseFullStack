@@ -1,10 +1,11 @@
-import { useState,useEffect } from "react";
-import axios from 'axios'
+import { useState, useEffect } from "react";
+import axios from "axios";
 import "./App.css";
 import Filter from "./components/filter/Filter";
 import Form from "./components/form/Form";
 import Persons from "./components/persons/Persons";
-import personsService from "./services/req"
+import personsService from "./services/req";
+import BtnDelete from "./components/btnDelete/BtnDelete";
 
 function App() {
   const [persons, setPersons] = useState([]);
@@ -27,55 +28,74 @@ function App() {
 
   /* Generamos lista de contactos */
   useEffect(() => {
-    personsService.getAll()
-    .then(initialPersons => {
-      setPersons(initialPersons)
-    })
-  }, [])
+    personsService.getAll().then((initialPersons) => {
+      setPersons(initialPersons);
+    });
+  }, []);
 
   /* Cuando hace click en boton para añadir */
   const addNewName = (e) => {
     e.preventDefault();
-    
-    /* Busca si el contacto ya existe */
-      if (persons.some(person => person.name === newName)) {
-        alert(`${newName} is already added to phonebook`);
-        return;
-      }
-
-      /* Datos nuevo contacto */
+    /* Datos nuevo contacto */
     const newPerson = {
       name: newName,
       number: newNumber,
-      
     };
 
+    /* Busca si el contacto ya existe */
+
+    const existingContact = persons.find(person => person.name === newName)
+    console.log(existingContact)  
+    if (existingContact){
+      if (
+        window.confirm(
+          "Ya existe un contacto con ese nombre, quieres actualizar su numero?"
+        )
+      ) {
+        const changedNumber = { ...existingContact, number: newNumber };
+        
+          personsService
+            .updatePerson(changedNumber.id, changedNumber)
+            .then((updateNumber) => {
+              setPersons(
+                persons.map((person) =>
+                  person.id !== existingContact.id ? person : updateNumber
+                )
+              );
+                setNewName("");
+                setNewNumber("");
+            
+            });
+        };
+      
+      return;
+    }
+
     /* POST para crear contacto */
-    personsService.create(newPerson)
-    .then(returnedPerson => {
-      setPersons(persons.concat(returnedPerson))
+    personsService.create(newPerson).then((returnedPerson) => {
+      setPersons(persons.concat(returnedPerson));
       setNewName("");
       setNewNumber("");
-    })
+    });
 
-/*     axios
+    /*     axios
     .post('http://localhost:3001/persons', newPerson)
     .then(response => {
       console.log(response)
       setPersons(persons.concat(response.data))
     
     }) */
-
-
-   
   };
 
   const filteredPersons = persons.filter((person) =>
     person.name.toLowerCase().includes(filter.toLowerCase())
   );
 
-    
-  
+  const updatePersons = () => {
+    personsService.getAll().then((updatedPersons) => {
+      setPersons(updatedPersons);
+    });
+  };
 
   return (
     <>
@@ -95,9 +115,12 @@ function App() {
         newNumber={newNumber}
         handleNewNumber={handleNewNumber}
       ></Form>
-      <h2>Numbers</h2>
 
-      <Persons filteredPersons={filteredPersons}></Persons>
+      <h2>Numbers</h2>
+      <Persons
+        filteredPersons={filteredPersons}
+        updatePersons={updatePersons}
+      ></Persons>
     </>
   );
 }
